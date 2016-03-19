@@ -1,0 +1,149 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>數列中的數值任意相加仍不與數列中的值重複</title>
+</head><body>
+<script type="text/javascript">
+"use strict";
+    document.body.innerHTML = `
+        <h1>數列中的數值任意相加仍不與數列中的值重複</h1>
+        <div>請使用開發者工具（console）操控函數</div>
+    `;
+    
+    let ArrUse = [],
+        jClearDefaultArr = true,
+        ArrNeedAddNum = [],
+        ArrBanBigNum = [],
+        NumNow = 0,
+        jTimer = {
+            func: null,
+            clock: null,
+            ms: 1000
+        },
+        jTimes = {
+            now: 0,
+            limit: Infinity
+        };
+    
+    function jNoDoubleNum( ArrInitNum, NumLimit ){
+        jTimes.now = 0,
+        jTimes.limit = NumLimit || Infinity,
+        ArrUse = ArrInitNum;
+        
+        if( jClearDefaultArr ){
+            ArrNeedAddNum.length = 0,
+            ArrBanBigNum.length = 0;
+        }
+        
+        //初始值相加
+        for(let p = 0, len = ArrUse.length ; p < len ; p++ ){
+            NumNow = ArrUse[ p ];
+            jPutInto( NumNow );
+            for(let q = 0, len = ArrNeedAddNum.length - 1; q < len ; q++ )
+                jPutInto( NumNow + ArrNeedAddNum[ q ] );
+        }
+        
+        function jCount(){
+            if( jTimes.now >= jTimes.limit ) return false;
+            jTimes.now++;
+            
+            NumNow = ArrUse[ ArrUse.length - 1 ];
+            
+            //檢查可用值
+            while( NumNow++ )
+                if( ArrBanBigNum.indexOf( NumNow ) !== -1 ) continue;
+                else break;
+            
+            //重整現況
+            ArrUse.push( NumNow );
+            console.log( ArrUse.join(', ') );
+            
+            //>> 挑出相加的值
+            jPutInto( NumNow );
+            for(let p = 0, len = ArrNeedAddNum.length - 1; p < len ; p++ )
+                jPutInto( NumNow + ArrNeedAddNum[ p ] );
+            
+            //>> 刪除小於現值的數
+            while( 1 ){
+                if( ArrBanBigNum[0] < NumNow )
+                    ArrBanBigNum.shift();
+                else
+                    break;
+            }
+        }
+        
+        function jPutInto( Num ){
+            if( ArrNeedAddNum.indexOf( Num ) !== -1 ) return;
+            ArrNeedAddNum.push( Num );
+            ArrBanBigNum.push( Num );
+        }
+        
+        let jTimerLock = false;
+        jTimer.func = function(){
+            if( jTimerLock ) return;
+            jTimerLock = true;
+            let isContinue = jCount();
+            jTimerLock = false;
+            if( isContinue != false )
+                jTimer.clock = setTimeout( jTimer.func, jTimer.ms );
+        };
+        
+        setTimeout( jTimer.func, 10 );
+    }
+    
+    jTimer.continue = function( NumContinueLimit ){
+        jTimer.stop();
+        jTimes.limit = NumContinueLimit ? NumContinueLimit + jTimes.now : Infinity;
+        setTimeout( jTimer.func, 10 );
+        clearTimeout( jTimer.clock );
+    };
+    
+    jTimer.stop = function(){
+        clearTimeout( jTimer.clock );
+    };
+    
+    console.log( jGetInfo('booklet') );
+    function jGetInfo( jInfo ){
+        switch( jInfo ){
+            case 'booklet':
+                return [ '說明：',
+                    [ '使用方式：',
+                        [ '1. jNoDoubleNum( [ NumA, NumB ], NumLimit )',
+                            '設定起頭的兩個數值 NumA, NumB。',
+                            '數值 NumA 小於 NumB。',
+                            '可選執行次數 NumLimit。'
+                        ].join('\n\t\t\t'),
+                        [ '2. jTimer.stop()',
+                            '停止執行。'
+                        ].join('\n\t\t\t'),
+                        [ '3. jTimer.continue( NumContinueLimit )',
+                            '繼續執行。'
+                        ].join('\n\t\t\t'),
+                        [ '4. jTimer.ms = NumMS',
+                            '設定執行間隔毫秒數。'
+                        ].join('\n\t\t\t')
+                    ].join('\n\t\t'),
+                    [ '顯示訊息：',
+                        [ '1. jGetInfo("booklet")',
+                            '顯示此說明。'
+                        ].join('\n\t\t\t'),
+                        [ '2. jGetInfo()',
+                            '顯示整理訊息。'
+                        ].join('\n\t\t\t'),
+                        [ '3. jGetInfo("rmNum")',
+                            '顯示已排除的數值（含有效個數）。'
+                        ].join('\n\t\t\t')
+                    ].join('\n\t\t')
+                ].join('\n\t');
+                break;
+            case 'rmNum':
+                return ArrNeedAddNum.join(', ');
+                break;
+            default:
+                return [ '參考：',
+                    '有效個數： ' + ArrUse.length,
+                    '已排除個數（含有效個數）： ' + ArrNeedAddNum.length
+                ].join('\n\t');
+        }
+    }
+
+</script>
+</body></html>
